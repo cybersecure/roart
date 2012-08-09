@@ -11,6 +11,7 @@ module Roart
       def login(config)
         @conf.merge!(config)
         agent = Mechanize.new
+        agent.agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
         page = agent.get(@conf[:server])
         form = page.form('login')
         form.user = @conf[:user]

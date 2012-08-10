@@ -39,15 +39,11 @@ module Roart
     end
 
     def get(uri)
-      response = connection.get(uri)
-      puts response.inspect
-      response
+      connection.get(uri)
     end
 
     def post(uri, payload)
-      response = connection.post(uri, payload)
-      puts response.inspect
-      response
+      connection.post(uri, payload)
     end
 
     protected

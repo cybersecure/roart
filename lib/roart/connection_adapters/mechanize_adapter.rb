@@ -21,7 +21,7 @@ module Roart
       end
 
       def get(uri)
-        @agent.get(uri).body
+        @agent.get(uri,[],@conf[:server]).body
       end
 
       def post(uri, payload)

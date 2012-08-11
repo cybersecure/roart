@@ -37,6 +37,19 @@ module Roart
         end
       end 
     end
+
+    def attachment_objects
+      unless @attachment_objects
+         attachment_ids = self.attachments.split("\n")
+         attachment_ids.shift
+         attachments = []
+         attachment_ids.each do |attachment_id|
+            attachments << Roart::Attachment.new(:id => attachment_id, :ticket => self.ticket)
+         end
+         @attachment_objects = attachments
+      end
+      @attachment_objects
+    end
     
     class << self
     

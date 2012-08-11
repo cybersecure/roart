@@ -60,7 +60,9 @@ module Roart
         if ln.match(/^ {9}/) && !ln.match(/^ {13}/)
           hash[:content] << "\n" + ln.strip if hash[:content]
         elsif ln.match(/^ {13}/)
-          hash[:attachments] << "\n" + ln.strip if hash[:attachments]
+          ln = ln.split(":")
+#hash[:attachments] << "\n" + ln.strip if hash[:attachments]
+          hash[:attachments] << "\n" + ln.first.strip if hash[:attachments]
         else
           ln = ln.split(":")
           unless ln.size == 1 || ln.first == 'Ticket' # we don't want to override the ticket method.

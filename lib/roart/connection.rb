@@ -39,10 +39,12 @@ module Roart
     end
 
     def get(uri)
+      debug "Get Request to RT: #{uri}"
       connection.get(uri)
     end
 
     def post(uri, payload)
+      debug "Post Request to RT: #{uri}"
       connection.post(uri, payload)
     end
 
@@ -57,6 +59,12 @@ module Roart
         (class << self; self; end).send :define_method, key do
           return value
         end
+      end
+    end
+
+    def debug(args)
+      if defined?(Rails)
+        Rails.logger.debug args.inspect
       end
     end
 

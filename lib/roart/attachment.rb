@@ -3,6 +3,7 @@ module Roart
       attr_accessor :content
       attr_accessor :id
       attr_accessor :ticket
+      attr_accessor :content_type
     
       IntKeys = %w[id]
 
@@ -27,6 +28,10 @@ module Roart
          collect_lines = false
          good_lines = []
          page.each do |line|
+            if line.match(/^ContentType: (.*)/)
+              collections = line.match(/^ContentType: (.*)/)
+              self.content_type = collections[1]
+            end
             if line.match(/^Content: .*/)
                collect_lines = true
                collections = line.match(/^Content: (.*)/)

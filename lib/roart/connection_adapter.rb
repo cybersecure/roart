@@ -7,7 +7,11 @@ module Roart
 
     def initialize(config)
       @adapter = Roart::ConnectionAdapters.const_get(config[:adapter].capitalize + "Adapter").new(config)
-      @adapter.login(config) if config[:user] && config[:pass]
+      if config[:user] && config[:pass]
+        @adapter.login(config)
+      elsif config[:use_cookie]
+        @adapter.set_cookie(config)
+      end
     end
 
     def authenticate(config)

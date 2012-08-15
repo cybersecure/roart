@@ -14,12 +14,15 @@ module Roart
     attr_reader :conf
 
     def initialize(conf)
+      puts "Creating Connection"
       if conf.is_a?(String)
         raise RoartError, "Loading Config File not yet implemented"
       elsif conf.class.name == Hash.name #TODO: Figure out why conf.is_a?(Hash) doesn't work
         @conf = conf
       end
       if Roart::check_keys(conf, Roart::Connections::RequiredConfig)
+        puts "Required config is present"
+        puts @conf.inspect
         @agent = @conf[:login]
         add_methods!
       else

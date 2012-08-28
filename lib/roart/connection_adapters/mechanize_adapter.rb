@@ -25,7 +25,7 @@ module Roart
         agent = Mechanize.new
         agent.agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
         cookie = Mechanize::Cookie.new("loginCookieValue", @conf[:cookie])
-        cookie.domain = ".cybersecure.local"
+        cookie.domain = ".cybersecure.com.au"
         cookie.path = "/"
         agent.cookie_jar.add(URI.parse(@conf[:server]), cookie)
         page = agent.get(@conf[:server])

@@ -3,21 +3,13 @@ module Roart
   class Errors
     include Enumerable
 
-    def initialize(obj)
-      @base, @errors = obj, {}
-    end
-
-    def add_to_base(msg)
-      add(:base, msg)
+    def initialize
+      @errors = {}
     end
 
     def add(field, message)
       @errors[field.to_sym] ||= []
       @errors[field.to_sym] << message
-    end
-
-    def on_base
-      on(:base)
     end
 
     def on(field)

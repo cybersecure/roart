@@ -99,7 +99,31 @@ module Roart
       return @new_record
     end
 
+    def steal
+      method = "Steal"
+      change_ownership(method)
+    end
+
+    def take
+      method = "Take"
+      change_ownership(method)
+    end
+
+    def untake
+      method = "Untake"
+      change_ownership(method)
+    end
+
     protected
+
+      def change_ownership(method)
+        uri = "#{self.class.connection.server}/REST/1.0/ticket/#{self.id}/take"
+        payload = { "Action" => method }
+        payload = payload.to_content_format
+        resp = self.class.connection.post(uri, :content => payload)
+        
+        process_ownership_change_response(resp, method.downcase.to_sym)
+      end
 
       def create #:nodoc:
         self.before_create
@@ -145,7 +169,30 @@ module Roart
           return true
         elsif (SUCCESS_CODES + CLIENT_ERROR_CODES).include?(status_code.to_i)
           lines[0] =~ /^# Could not (create|update) ticket/ and lines.shift
-          lines.each { |line| errors.add_to_base(line) if line =~ /^#/ }
+          lines.each { |line| errors.add(:base, line) if line =~ /^#/ }
+          return false
+        else
+          raise TicketSystemError, "Ticket #{action_name} Failed (#{status_line})"
+        end
+      end
+
+      def process_ownership_change_response(response,action)
+        errors.clear
+        action_name = action.to_s.capitalize
+
+        lines = response.split("\n").reject { |l| l.blank? }
+
+        status_line = lines.shift
+        status_line.present? or
+          raise TicketSystemError, "Ticket #{action_name} Failed (blank response)"
+
+        version, status_code, status_text = status_line.split(/\s+/,2)
+
+        if SUCCESS_CODES.include?(status_code.to_i) && lines[0] =~ /^# Owner changed from (\S+) to (\S+)/
+          self.owner = $2
+          return true
+        elsif (SUCCESS_CODES + CLIENT_ERROR_CODES).include?(status_code.to_i)
+          lines.each { |line| errors.add(:base, line) if line =~ /^#/ }
           return false
         else
           raise TicketSystemError, "Ticket #{action_name} Failed (#{status_line})"

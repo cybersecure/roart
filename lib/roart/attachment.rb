@@ -47,7 +47,8 @@ module Roart
                end
             end
          end
-         good_lines.join(" ")
+         separator = self.content_type == "text/plain" ? "\n" : " "
+         good_lines.join(separator)
 #         page.delete_if{|x| !x.include?(":") && !x.match(/^ {9}/) && !x.match(/^ {13}/)}
 #         page.each do |ln|
 #            if ln.match(/^ {9}/) && !ln.match(/^ {13}/)

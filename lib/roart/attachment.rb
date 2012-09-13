@@ -28,8 +28,12 @@ module Roart
           uri = self.ticket.class.connection.rest_path + "ticket/#{self.ticket.id}/attachments/#{self.id}/content"
           page = self.ticket.class.connection.get(uri)
           raise TicketSystemError, "Can't get attachment content." unless page
-          raise TicketSystemInterfaceError, "Error getting attachment content for Ticket: #{self.ticket.id}." unless page.split("\n")[0].include?("200")
-          @content = get_content_from_page(page)
+          if page.blank?
+            @content = ""
+          else
+            raise TicketSystemInterfaceError, "Error getting attachment content for Ticket: #{self.ticket.id}." unless page.split("\n")[0].include?("200")
+            @content = get_content_from_page(page)
+          end
         end
         @content
       end

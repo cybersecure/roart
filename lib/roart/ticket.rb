@@ -82,7 +82,7 @@ module Roart
 
       uri = "#{self.class.connection.server}/REST/1.0/ticket/#{self.id}/comment"
 
-      attachments = Roart::Attachment.detect(comment[:attachments])
+      attachments = Roart::AttachmentFile.detect(comment[:attachments])
 
       comment.merge!(:attachment => attachments.map(&:name).join(",")) unless attachments.empty?
 

@@ -1,4 +1,14 @@
 module Roart
+   class AttachmentCollection < Array
+      def to_payload
+         hash = Hash.new
+         self.each_with_index do |attach, index|
+            hash["attachment_#{index+1}"] = attach
+         end
+         hash
+      end
+   end
+
    class Attachment
       attr_accessor :content
       attr_accessor :id
@@ -53,6 +63,40 @@ module Roart
          page = page.split("\n")
          2.times { page.shift } #remove the status line and remove the empty line
          page.join("\n")
+      end
+   end
+
+   class AttachmentFile < File
+
+      attr_reader :name, :file
+
+      def initialize(name, file)
+         @name = name
+         @file = file
+      end
+
+      def path
+         name
+      end
+
+      def read
+         file.read
+      end
+
+      def mime_type
+         file.content_type if file.respond_to?(:content_type)
+      end
+
+      def self.detect(*args)
+         AttachmentCollection.new Array(args.compact).flatten.map { |file|
+            if file.is_a?(File)
+               AttachmentFile.new(File.basename(file.path), file)
+            elsif file.is_a?(String)
+               AttachmentFile.new(File.basename(file), File.open(file, 'rb'))
+            elsif file.respond_to?(:open, :original_filename)
+               AttachmentFile.new(file.original_filename, file.open)
+            end
+         }.compact
       end
    end
 end

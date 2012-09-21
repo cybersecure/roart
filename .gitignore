@@ -1,4 +1,5 @@
 .DS_Store
+.rvmrc
 announcement.txt
 coverage
 doc

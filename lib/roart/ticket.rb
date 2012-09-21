@@ -67,24 +67,45 @@ module Roart
     # Example:
     #   tix = Ticket.find(1000)
     #   tix.comment("This is a comment", :time_worked => 45, :cc => 'someone@example.com')
+    #
+    #   Attachments
+    #   tix.comment("This is a comment", :attachments => "/tmp/filename.txt")
+    #
+    #   Attachment as a file descriptor
+    #   tix.comment("This is a comment", :attachments => File.open("/tmp/filename.txt", "rb"))
+    #
+    #   Attachment as a ActionDispatch::Http::UploadedFile instance
+    #   tix.comment("This is a comment", :attachments => [params[:attachment_1], params[:attachment_2]])
+    #
     def comment(comment, opt = {})
       comment = {:text => comment, :action => 'Comment'}.merge(opt)
 
       uri = "#{self.class.connection.server}/REST/1.0/ticket/#{self.id}/comment"
-      payload = comment.to_content_format
-      resp = self.class.connection.post(uri, :content => payload)
-      resp = resp.split("\n")
-      raise TicketSystemError, "Ticket Comment Failed" unless resp.first.include?("200")
+
+      attachments = Roart::Attachment.detect(comment[:attachments])
+
+      comment.merge!(:attachment => attachments.map(&:name).join(",")) unless attachments.empty?
+
+      raw_resp = self.class.connection.post(uri, {:content => comment.to_content_format}.merge(attachments.to_payload))
+
+      resp = raw_resp.split("\n")
+      raise TicketSystemError, "Ticket Comment Failed \n\n RT Response:\n#{raw_resp}" unless resp.first.include?("200")
       !!resp[2].match(/^# Message recorded/)
     end
 
     def correspond(correspond, opt = {})
-      comment = {:text => correspond, :action => 'Correspond'}.merge(opt)
+      correspond = {:text => correspond, :action => 'Correspond'}.merge(opt)
+
       uri = "#{self.class.connection.server}/REST/1.0/ticket/#{self.id}/comment"
-      payload = comment.to_content_format
-      resp = self.class.connection.post(uri, :content => payload)
-      resp = resp.split("\n")
-      raise TicketSystemError, "Ticket Comment Failed" unless resp.first.include?("200")
+
+      attachments = Roart::AttachmentFile.detect(correspond[:attachments])
+
+      correspond.merge!(:attachment => attachments.map(&:name).join(",")) unless attachments.empty?
+
+      raw_resp = self.class.connection.post(uri, {:content => correspond.to_content_format}.merge(attachments.to_payload))
+
+      resp = raw_resp.split("\n")
+      raise TicketSystemError, "Ticket Comment Failed \n\n RT Response:\n#{raw_resp}" unless resp.first.include?("200")
       !!resp[2].match(/^# Message recorded/)
     end
 
@@ -130,7 +151,6 @@ module Roart
         uri = "#{self.class.connection.server}/REST/1.0/ticket/new"
         payload = @attributes.to_content_format
         resp = self.class.connection.post(uri, :content => payload)
-
         process_save_response(resp, :create)
       end
 
@@ -352,7 +372,6 @@ module Roart
         page = page.split("\n")
         status = page.delete_at(0)
         if status.include?("200")
-          page.delete_if{|x| !x.include?(":")}
           page
         else
           raise TicketSystemInterfaceError, "Error Getting Ticket: #{status}"

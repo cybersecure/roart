@@ -10,7 +10,7 @@ module Roart
 
       def login(config)
         @conf.merge!(config)
-        agent = Mechanize.new
+        agent = RoartMechanize.new
         agent.agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
         page = agent.get(@conf[:server])
         form = page.form('login')
@@ -22,7 +22,7 @@ module Roart
 
       def set_cookie(config)
         @conf.merge!(config)
-        agent = Mechanize.new
+        agent = RoartMechanize.new
         agent.agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
         cookie = Mechanize::Cookie.new("loginCookieValue", @conf[:cookie])
         cookie.domain = ".cybersecure.com.au"

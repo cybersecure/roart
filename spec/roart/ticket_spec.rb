@@ -60,9 +60,9 @@ describe "Ticket" do
     end
     
     it 'should give back an array of strings' do
-      connection = mock('connection', :get => "200 OK\n23:SomeTicket\n33:Another")
+      connection = mock('connection', :get => "200 OK\n23:SomeTicket\n33:Another\nMultilineValue")
       Roart::Ticket.should_receive(:connection).and_return(connection)
-      Roart::Ticket.send(:page_array, 'uri').should == ['23:SomeTicket', '33:Another']
+      Roart::Ticket.send(:page_array, 'uri').should == ['23:SomeTicket', '33:Another', 'MultilineValue']
     end
     
   end
@@ -549,5 +549,43 @@ describe "Ticket" do
     end
     
   end
-  
+
+  describe ".comment" do
+    before do
+      @ticket_file = File.expand_path("ticket.txt", File.dirname(__FILE__) + "../../test_data")
+      @lorem_file = File.expand_path("lorem.txt", File.dirname(__FILE__) + "../../test_data")
+      @connection = mock('connection', :server => "localhost", :get => IO.read(@ticket_file))
+    end
+
+    it "should add comment into POST request" do
+      @connection.should_receive(:post).with do |uri, payload|
+        payload.should have_key(:content)
+        payload[:content].should include("Text: test comment")
+      end.and_return("RT/4.0.5 200 Ok\n\n# Message recorded\n\n")
+
+      Roart::Ticket.stub(:connection).and_return(@connection)
+
+      @ticket = Roart::Ticket.find(11111)
+
+      @ticket.comment("test comment")
+    end
+
+    it "should add attachment into POST request" do
+      @connection.should_receive(:post).with do |uri, payload|
+        payload.should have_key(:content)
+        payload[:content].should include("Attachment: lorem.txt")
+
+        payload.should have_key("attachment_1")
+        payload["attachment_1"].should be_a(File)
+      end.and_return("RT/4.0.5 200 Ok\n\n# Message recorded\n\n")
+
+      Roart::Ticket.stub(:connection).and_return(@connection)
+
+      @ticket = Roart::Ticket.find(11111)
+
+      @ticket.comment("test comment", :attachments => @lorem_file)
+    end
+
+  end
+
 end

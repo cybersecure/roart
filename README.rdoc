@@ -68,6 +68,26 @@ If you are using Best Practical's Request Tracker (RT) and you need to interact 
     ticket = Ticket.find(23452)
     ticket.comment("This is a lovely Ticket", :time_worked => 45, :cc => 'someone@example.com'))
 
+* Attachments
+
+RT REST does support attachments on ticket create and update.
+Comments have to be used instead.
+
+Forum link http://www.gossamer-threads.com/lists/rt/users/106049
+Wiki link http://requesttracker.wikia.com/wiki/REST#Ticket_Attachments
+
+    ticket = Ticket.find(23452)
+
+    # File path
+    ticket.comment("This is a comment", :attachments => "/tmp/filename.txt")
+
+    # Attachment as a file descriptor
+    ticket.comment("This is a comment", :attachments => File.open("/tmp/filename.txt", "rb"))
+
+    # Attachment as a ActionDispatch::Http::UploadedFile instance
+    ticket.comment("This is a comment", :attachments => [params[:attachment_1], params[:attachment_2]])
+
+
 
 == REQUIREMENTS:
 

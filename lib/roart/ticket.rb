@@ -72,6 +72,21 @@ module Roart
 
       uri = "#{self.class.connection.server}/REST/1.0/ticket/#{self.id}/comment"
       payload = comment.to_content_format
+      puts payload.inspect
+      resp = self.class.connection.post(uri, :content => payload)
+      resp = resp.split("\n")
+      raise TicketSystemError, "Ticket Comment Failed" unless resp.first.include?("200")
+      !!resp[2].match(/^# Message recorded/)
+    end
+
+    def raw_comment(comment,opt= {})
+      comment = { :Text => comment, :Action => 'Comment'}.merge(opt)
+      uri = "#{self.class.connection.server}/REST/1.0/ticket/#{self.id}/comment"
+      fields = comment.map do |key,value|
+        "#{key}: #{value}"
+      end
+      payload = fields.compact.sort.join("\n")
+      puts payload.inspect
       resp = self.class.connection.post(uri, :content => payload)
       resp = resp.split("\n")
       raise TicketSystemError, "Ticket Comment Failed" unless resp.first.include?("200")

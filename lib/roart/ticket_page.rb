@@ -61,6 +61,7 @@ module Roart
           hash[:content] << "\n" + ln.strip if hash[:content]
         elsif ln.match(/^ {13}/)
           ln = ln.split(":")
+          puts ln
 #hash[:attachments] << "\n" + ln.strip if hash[:attachments]
           hash[:attachments] << "\n" + ln.first.strip if hash[:attachments]
         else
